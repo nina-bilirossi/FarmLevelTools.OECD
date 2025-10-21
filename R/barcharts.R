@@ -10,17 +10,17 @@
 #' @export
 binary_X_categorical_Y_chart <- function(database, bin_x, cat_y, title = "",
                                          x_title = "", legend_title = "", caption = NA) {
-  data_filtered <- database %>%
+  data_filtered <- database |>
     filter(!is.na({{bin_x}}), {{bin_x}} != "", {{bin_x}} != "Pending",
            !is.na({{cat_y}}), {{cat_y}} != "")
   n_tools <- nrow(data_filtered)
 
   # Convert to factors
-  data_filtered <- data_filtered %>%
+  data_filtered <- data_filtered |>
     mutate(
       bin_x = factor({{bin_x}}),
       cat_y = factor({{cat_y}})
-    ) %>%
+    ) |>
     mutate(
       bin_x = factor(
         {{bin_x}},
@@ -51,12 +51,11 @@ binary_X_categorical_Y_chart <- function(database, bin_x, cat_y, title = "",
 #' This function creates a simple bar chart for binary variables
 #' @param bin_x the binary variable to be shown, a column name in the database
 #' @param title chart title (default is no title)
-#' @importFrom magrittr %>%
 #' @export
 yes_no_histogram <- function(database, bin_x, title = "") {
-  data_filtered <- database %>%
+  data_filtered <- database |>
     filter(!is.na({{bin_x}}),
-           {{bin_x}} != "") %>%
+           {{bin_x}} != "") |>
     mutate(
       `Aligned.with.national.inventory.` = factor(
         {{bin_x}},
@@ -65,9 +64,9 @@ yes_no_histogram <- function(database, bin_x, title = "") {
     )
 
   # Compute percentages
-  plot_data <- data_filtered %>%
-    group_by({{bin_x}}) %>%
-    summarise(count = n(), .groups = "drop") %>%
+  plot_data <- data_filtered |>
+    group_by({{bin_x}}) |>
+    summarise(count = n(), .groups = "drop") |>
     mutate(percent = count / sum(count) * 100)
 
   # Plot bar chart with percentages
