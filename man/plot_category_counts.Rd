@@ -12,7 +12,8 @@ plot_category_counts(
   y_label = "Count",
   fill_color = "darkgreen",
   sort_descending = TRUE,
-  show_counts = TRUE
+  show_counts = TRUE,
+  top_n = NULL
 )
 }
 \arguments{
@@ -38,6 +39,9 @@ in descending order. Default is \code{TRUE}.}
 
 \item{show_counts}{Logical indicating whether to display count labels above
 bars. Default is \code{TRUE}.}
+
+\item{top_n}{Numberindicating whether how many categories to be displayed (starting from the most frequent).
+Default is \code{NULL}.}
 }
 \value{
 A \code{ggplot2} object that can be further customized or displayed.
@@ -58,5 +62,5 @@ for better readability when category names are long.
 }
 \examples{
 df_wide <- disaggregate_target(database, "Main.target.user.or.client.group")
-plot_target_user_counts(df_wide, "Main.target.user.or.client.group")
+plot_category_counts(df_wide, "Tool")
 }

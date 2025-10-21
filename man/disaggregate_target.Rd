@@ -17,4 +17,5 @@ In other words, if a tool is designed for 2 distinct user types, the resulting d
 }
 \examples{
 df_wide <- disaggregate_target(database, "Main.target.user.or.client.group")
+plot_category_counts(df_wide, "Tool")
 }

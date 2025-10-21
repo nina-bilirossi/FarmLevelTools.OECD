@@ -105,6 +105,8 @@ yes_no_histogram <- function(database, bin_x, title = "") {
 #'   in descending order. Default is \code{TRUE}.
 #' @param show_counts Logical indicating whether to display count labels above
 #'   bars. Default is \code{TRUE}.
+#' @param top_n Numberindicating whether how many categories to be displayed (starting from the most frequent).
+#' Default is \code{NULL}.
 #'
 #' @return A \code{ggplot2} object that can be further customized or displayed.
 #'
@@ -119,7 +121,7 @@ yes_no_histogram <- function(database, bin_x, title = "") {
 #'
 #' @examples
 #' df_wide <- disaggregate_target(database, "Main.target.user.or.client.group")
-#' plot_target_user_counts(df_wide, "Main.target.user.or.client.group")
+#' plot_category_counts(df_wide, "Tool")
 #' @export
 plot_category_counts <- function(df_wide,
                                  id_col = NULL,
@@ -128,7 +130,8 @@ plot_category_counts <- function(df_wide,
                                  y_label = "Count",
                                  fill_color = "darkgreen",
                                  sort_descending = TRUE,
-                                 show_counts = TRUE) {
+                                 show_counts = TRUE,
+                                 top_n = NULL) {
 
   # Determine which columns to count
   if (is.null(id_col)) {
@@ -148,6 +151,11 @@ plot_category_counts <- function(df_wide,
   # Sort by count if requested
   if (sort_descending) {
     category_counts <- category_counts[order(-category_counts$count), ]
+  }
+
+  # Keep only top N categories if specified
+  if (!is.null(top_n) && top_n > 0) {
+    category_counts <- head(category_counts, top_n)
   }
 
   # Set factor levels to preserve order

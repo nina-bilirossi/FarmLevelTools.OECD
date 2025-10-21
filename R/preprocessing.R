@@ -6,6 +6,7 @@
 #' @param target_col a column containing multiple values to be disaggregated, all separated by a comma
 #' @examples
 #' df_wide <- disaggregate_target(database, "Main.target.user.or.client.group")
+#' plot_category_counts(df_wide, "Tool")
 #' @export
 disaggregate_target <- function(df, target_col) {
   # Split the comma-separated values and create long format
