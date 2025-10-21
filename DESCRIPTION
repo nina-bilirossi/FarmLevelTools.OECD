@@ -25,4 +25,6 @@ Imports:
   sf,
   rnaturalearth,
   rnaturalearthdata,
-  ggplot2
+  ggplot2,
+  magrittr,
+  dplyr
