@@ -17,3 +17,8 @@ A ggplot2 object
 \description{
 Plot year-on-year growth in active tools
 }
+\examples{
+yoy <- calculate_yoy_growth(database)
+plot_yoy_growth(yoy)
+
+}

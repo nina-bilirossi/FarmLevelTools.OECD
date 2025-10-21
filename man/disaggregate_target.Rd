@@ -2,9 +2,7 @@
 % Please edit documentation in R/preprocessing.R
 \name{disaggregate_target}
 \alias{disaggregate_target}
-\title{A function that creates a new dataframe to disaggregate variable for which there are several entries.
-The variable is typically a list of values separated by a comma. The resulting dataframe contains one row for each user type for each tool.
-In other words, if a tool is designed for 2 distinct user types, the resulting dataframe will have 2 rows for that tool.}
+\title{Create a new dataframe to disaggregate variable for which there are several entries.}
 \usage{
 disaggregate_target(df, target_col)
 }
@@ -14,7 +12,6 @@ disaggregate_target(df, target_col)
 \item{target_col}{a column containing multiple values to be disaggregated, all separated by a comma}
 }
 \description{
-A function that creates a new dataframe to disaggregate variable for which there are several entries.
 The variable is typically a list of values separated by a comma. The resulting dataframe contains one row for each user type for each tool.
 In other words, if a tool is designed for 2 distinct user types, the resulting dataframe will have 2 rows for that tool.
 }

@@ -1,4 +1,5 @@
-#' A function that creates a new dataframe to disaggregate variable for which there are several entries.
+#' Create a new dataframe to disaggregate variable for which there are several entries.
+#'
 #' The variable is typically a list of values separated by a comma. The resulting dataframe contains one row for each user type for each tool.
 #' In other words, if a tool is designed for 2 distinct user types, the resulting dataframe will have 2 rows for that tool.
 #' @param df your dataframe

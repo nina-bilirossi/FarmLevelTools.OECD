@@ -91,6 +91,9 @@ active_tools <- function(database, ownership = FALSE, precision = TRUE, thisyear
 #' @param database A dataframe containing tool information
 #' @param thisyear Numeric. The current year for calculating active tools. Default is current year.
 #' @return A dataframe with year-on-year growth metrics
+#' @examples
+#' yoy <- calculate_yoy_growth(database)
+#'
 #' @export
 calculate_yoy_growth <- function(database, thisyear = as.numeric(format(Sys.Date(), "%Y"))) {
   # Replace empty strings with NA
@@ -137,6 +140,10 @@ calculate_yoy_growth <- function(database, thisyear = as.numeric(format(Sys.Date
 #' @param yoy_df A dataframe from calculate_yoy_growth function
 #' @param metric Character. Type of metric to plot: "absolute", "percentage", or "both". Default is "absolute".
 #' @return A ggplot2 object
+#' @examples
+#' yoy <- calculate_yoy_growth(database)
+#' plot_yoy_growth(yoy)
+#'
 #' @export
 plot_yoy_growth <- function(yoy_df, metric = "absolute") {
   # Remove first year (NA values)

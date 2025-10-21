@@ -1,4 +1,4 @@
-#' This function allows to create a bar chart of a binary variable (Yes/No) against a categorical variable
+#' Create a bar chart of a binary variable (Yes/No) against a categorical variable
 #' @param bin_x binary variable
 #' @param cat_y categorical variable
 #' @param title Defaults to ""
@@ -44,7 +44,7 @@ binary_X_categorical_Y_chart <- function(database, bin_x, cat_y, title = "",
 }
 
 
-#' This function creates a simple bar chart for binary variables
+#' Create a simple bar chart for binary variables
 #' @param bin_x the binary variable to be shown, a column name in the database
 #' @param title chart title (default is no title)
 #' @export

@@ -2,7 +2,7 @@
 % Please edit documentation in R/barcharts.R
 \name{binary_X_categorical_Y_chart}
 \alias{binary_X_categorical_Y_chart}
-\title{This function allows to create a bar chart of a binary variable (Yes/No) against a categorical variable}
+\title{Create a bar chart of a binary variable (Yes/No) against a categorical variable}
 \usage{
 binary_X_categorical_Y_chart(
   database,
@@ -28,5 +28,5 @@ binary_X_categorical_Y_chart(
 \item{caption}{optional caption (e.g., "*Excluded 1 tool, open-source status = Pending.")}
 }
 \description{
-This function allows to create a bar chart of a binary variable (Yes/No) against a categorical variable
+Create a bar chart of a binary variable (Yes/No) against a categorical variable
 }

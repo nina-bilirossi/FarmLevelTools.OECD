@@ -20,3 +20,7 @@ A dataframe with year-on-year growth metrics
 \description{
 Calculate year-on-year growth in active tools
 }
+\examples{
+yoy <- calculate_yoy_growth(database)
+
+}

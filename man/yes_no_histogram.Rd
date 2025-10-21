@@ -2,7 +2,7 @@
 % Please edit documentation in R/barcharts.R
 \name{yes_no_histogram}
 \alias{yes_no_histogram}
-\title{This function creates a simple bar chart for binary variables}
+\title{Create a simple bar chart for binary variables}
 \usage{
 yes_no_histogram(database, bin_x, title = "")
 }
@@ -12,5 +12,5 @@ yes_no_histogram(database, bin_x, title = "")
 \item{title}{chart title (default is no title)}
 }
 \description{
-This function creates a simple bar chart for binary variables
+Create a simple bar chart for binary variables
 }
