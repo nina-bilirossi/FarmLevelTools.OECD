@@ -1,5 +1,3 @@
-
-
 #' This function allows to create a bar chart of a binary variable (Yes/No) against a categorical variable
 #' @param bin_x binary variable
 #' @param cat_y categorical variable
@@ -11,17 +9,13 @@
 binary_X_categorical_Y_chart <- function(database, bin_x, cat_y, title = "",
                                          x_title = "", legend_title = "", caption = NA) {
   data_filtered <- database |>
-    filter(!is.na({{bin_x}}), {{bin_x}} != "", {{bin_x}} != "Pending",
-           !is.na({{cat_y}}), {{cat_y}} != "")
-  n_tools <- nrow(data_filtered)
-
-  # Convert to factors
-  data_filtered <- data_filtered |>
-    mutate(
+    dplyr::filter(!is.na({{bin_x}}), {{bin_x}} != "", {{bin_x}} != "Pending",
+                  !is.na({{cat_y}}), {{cat_y}} != "") |>
+    dplyr::mutate(
       bin_x = factor({{bin_x}}),
       cat_y = factor({{cat_y}})
     ) |>
-    mutate(
+    dplyr::mutate(
       bin_x = factor(
         {{bin_x}},
         levels = c("Yes", "No", "Not applicable (model-agnostic)", "NA")
@@ -29,22 +23,24 @@ binary_X_categorical_Y_chart <- function(database, bin_x, cat_y, title = "",
       cat_y = factor({{cat_y}})
     )
 
+  n_tools <- nrow(data_filtered)
+
   if(is.na(caption)){
-    caption <- glue('Number of tools: {n_tools}')
+    caption <- glue::glue('Number of tools: {n_tools}')
   }
 
   # Plot
-  ggplot(data_filtered, aes(x = bin_x, fill = cat_y)) +
-    geom_bar() +
-    theme_minimal() +
-    labs(
+  ggplot2::ggplot(data_filtered, ggplot2::aes(x = bin_x, fill = cat_y)) +
+    ggplot2::geom_bar() +
+    ggplot2::theme_minimal() +
+    ggplot2::labs(
       title = title,
       x = x_title,
       y = "number of tools",
-      fill = legend_title
+      fill = legend_title,
+      caption = caption
     ) +
-    theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-    labs(caption = caption)
+    ggplot2::theme(axis.text.x = ggplot2::element_text(angle = 45, hjust = 1))
 }
 
 
@@ -54,9 +50,9 @@ binary_X_categorical_Y_chart <- function(database, bin_x, cat_y, title = "",
 #' @export
 yes_no_histogram <- function(database, bin_x, title = "") {
   data_filtered <- database |>
-    filter(!is.na({{bin_x}}),
-           {{bin_x}} != "") |>
-    mutate(
+    dplyr::filter(!is.na({{bin_x}}),
+                  {{bin_x}} != "") |>
+    dplyr::mutate(
       `Aligned.with.national.inventory.` = factor(
         {{bin_x}},
         levels = c("Yes", "No", "Not Applicable (model-agnostic)")
@@ -65,26 +61,26 @@ yes_no_histogram <- function(database, bin_x, title = "") {
 
   # Compute percentages
   plot_data <- data_filtered |>
-    group_by({{bin_x}}) |>
-    summarise(count = n(), .groups = "drop") |>
-    mutate(percent = count / sum(count) * 100)
+    dplyr::group_by({{bin_x}}) |>
+    dplyr::summarise(count = dplyr::n(), .groups = "drop") |>
+    dplyr::mutate(percent = count / sum(count) * 100)
 
   # Plot bar chart with percentages
-  ggplot(plot_data, aes(x = {{bin_x}}, y = percent)) +
-    geom_col(fill = "#3B82F6", width = 0.6) +
-    geom_text(aes(label = paste0(round(percent, 1), "%")),
-              vjust = -0.5, size = 4.2, color = "black") +
-    theme_minimal(base_size = 13) +
-    labs(
+  ggplot2::ggplot(plot_data, ggplot2::aes(x = {{bin_x}}, y = percent)) +
+    ggplot2::geom_col(fill = "#3B82F6", width = 0.6) +
+    ggplot2::geom_text(ggplot2::aes(label = paste0(round(percent, 1), "%")),
+                       vjust = -0.5, size = 4.2, color = "black") +
+    ggplot2::theme_minimal(base_size = 13) +
+    ggplot2::labs(
       title = title,
       x = "",
       y = "% of tools"
     ) +
-    theme(
-      axis.text.x = element_text(angle = 30, hjust = 1, vjust = 1),
-      plot.title = element_text(face = "bold")
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 30, hjust = 1, vjust = 1),
+      plot.title = ggplot2::element_text(face = "bold")
     ) +
-    ylim(0, max(plot_data$percent) * 1.15)  # add headroom for text labels
+    ggplot2::ylim(0, max(plot_data$percent) * 1.15)  # add headroom for text labels
 }
 
 
@@ -124,8 +120,6 @@ yes_no_histogram <- function(database, bin_x, title = "") {
 #' @examples
 #' df_wide <- disaggregate_target(database, "Main.target.user.or.client.group")
 #' plot_target_user_counts(df_wide, "Main.target.user.or.client.group")
-#' @importFrom ggplot2 ggplot aes geom_bar geom_text labs theme_minimal theme
-#'   element_text
 #' @export
 plot_category_counts <- function(df_wide,
                                  id_col = NULL,
@@ -161,22 +155,22 @@ plot_category_counts <- function(df_wide,
                                      levels = category_counts$category)
 
   # Create bar chart
-  p <- ggplot(category_counts, aes(x = category, y = count)) +
-    geom_bar(stat = "identity", fill = fill_color) +
-    labs(
+  p <- ggplot2::ggplot(category_counts, ggplot2::aes(x = category, y = count)) +
+    ggplot2::geom_bar(stat = "identity", fill = fill_color) +
+    ggplot2::labs(
       title = title,
       x = x_label,
       y = y_label
     ) +
-    theme_minimal() +
-    theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
-      plot.title = element_text(hjust = 0.5, face = "bold")
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      plot.title = ggplot2::element_text(hjust = 0.5, face = "bold")
     )
 
   # Add count labels if requested
   if (show_counts) {
-    p <- p + geom_text(aes(label = count), vjust = -0.5, size = 3.5)
+    p <- p + ggplot2::geom_text(ggplot2::aes(label = count), vjust = -0.5, size = 3.5)
   }
 
   return(p)

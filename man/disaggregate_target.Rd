@@ -3,7 +3,7 @@
 \name{disaggregate_target}
 \alias{disaggregate_target}
 \title{A function that creates a new dataframe to disaggregate variable for which there are several entries.
-The varaible is typically a list of values separated by a coma. The resulting dataframe contains one row for each user type for ech tool.
+The variable is typically a list of values separated by a comma. The resulting dataframe contains one row for each user type for each tool.
 In other words, if a tool is designed for 2 distinct user types, the resulting dataframe will have 2 rows for that tool.}
 \usage{
 disaggregate_target(df, target_col)
@@ -11,11 +11,11 @@ disaggregate_target(df, target_col)
 \arguments{
 \item{df}{your dataframe}
 
-\item{target_col}{a column containing multiple values to be disaggregated, all separated by a coma}
+\item{target_col}{a column containing multiple values to be disaggregated, all separated by a comma}
 }
 \description{
 A function that creates a new dataframe to disaggregate variable for which there are several entries.
-The varaible is typically a list of values separated by a coma. The resulting dataframe contains one row for each user type for ech tool.
+The variable is typically a list of values separated by a comma. The resulting dataframe contains one row for each user type for each tool.
 In other words, if a tool is designed for 2 distinct user types, the resulting dataframe will have 2 rows for that tool.
 }
 \examples{

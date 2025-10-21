@@ -27,4 +27,6 @@ Imports:
   rnaturalearth,
   rnaturalearthdata,
   ggplot2,
-  dplyr
+  dplyr,
+  rlang,
+  tidyr
