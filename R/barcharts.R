@@ -51,6 +51,7 @@ binary_X_categorical_Y_chart <- function(database, bin_x, cat_y, title = "",
 #' This function creates a simple bar chart for binary variables
 #' @param bin_x the binary variable to be shown, a column name in the database
 #' @param title chart title (default is no title)
+#' @importFrom magrittr %>%
 #' @export
 yes_no_histogram <- function(database, bin_x, title = "") {
   data_filtered <- database %>%
