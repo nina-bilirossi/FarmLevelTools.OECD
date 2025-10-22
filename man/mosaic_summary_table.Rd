@@ -20,17 +20,11 @@ subtotal rows for each x category.
 }
 \description{
 Generates a summary table with counts and percentages for two categorical
-variables, matching the data used in mosaic plots.
-}
-\details{
-The function applies the same data cleaning filters as
-\code{mosaic_bin2}, removing missing values, empty strings, and "NA" text.
-Percentages are rounded to one decimal place.
+variables.
 }
 \examples{
 \dontrun{
-mosaic_summary_table(mydata, Aligned.with.national.inventory,
-                     External.certification.against.reporting.standard)
+mosaic_summary_table(mydata, variable1, variable2)
 }
 
 }

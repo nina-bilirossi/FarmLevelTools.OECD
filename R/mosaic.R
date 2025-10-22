@@ -1,103 +1,105 @@
-#' Create a Binary Mosaic Plot
+#' Create a Mosaic-Style Plot for Two Binary Variables
 #'
-#' Creates a mosaic plot for visualizing the relationship between two categorical
-#' variables, with column names passed as strings for programmatic use.
+#' Creates a tile-based visualization showing the relationship between two
+#' categorical variables, with tile sizes proportional to counts.
 #'
 #' @param df A data frame containing the variables to plot.
-#' @param x Character string. Name of the column to use for the x-axis.
-#' @param y Character string. Name of the column to use for the y-axis (fill).
-#' @param title Character string. Title for the plot. If NA (default), an automatic
-#'   title will be generated.
-#' @param show_pct Logical. If TRUE, displays percentage labels on the plot.
-#'   Default is FALSE.
+#' @param x Character string. Name of the column for the x-axis.
+#' @param y Character string. Name of the column for the y-axis (fill).
+#' @param title Character string. Title for the plot. If NA (default), an
+#'   automatic title will be generated.
 #'
-#' @return A ggplot2 object representing the mosaic plot.
+#' @return A ggplot2 object representing the mosaic-style plot.
 #'
-#' @details The function automatically filters out missing values, empty strings,
-#'   and "NA" text values from both variables. The x variable is factored with
-#'   levels c("Yes", "No").
+#' @details The function automatically filters out missing values and empty
+#'   strings from both variables. Creates a tile plot where tile width
+#'   represents the proportion within each x category.
 #'
 #' @examples
 #' \dontrun{
-#' mosaic_bin2(mydata, "variable1", "variable2")
-#' mosaic_bin2(mydata, "variable1", "variable2",
-#'             title = "Custom Title", show_pct = TRUE)
+#' mosaic_plot(mydata, "variable1", "variable2")
+#' mosaic_plot(mydata, "variable1", "variable2", title = "Custom Title")
 #' }
 #'
 #' @import ggplot2
 #' @import dplyr
 #' @importFrom rlang sym .data
-#' @importFrom ggmosaic geom_mosaic theme_mosaic
-#' @importFrom scales percent
 #'
 #' @export
-mosaic_bin2 <- function(df, x, y, title = NA, show_pct = FALSE) {
-  # x and y are strings
+mosaic_plot <- function(df, x, y, title = NA) {
   x_name <- x
   y_name <- y
 
-  df <- df %>%
+  # Filter and prepare data
+  df_clean <- df %>%
     filter(
       !is.na(!!sym(x_name)),
       .data[[x_name]] != "NA",
       .data[[x_name]] != "",
       !is.na(!!sym(y_name)),
       .data[[y_name]] != ""
-    )
-
-  # Compute counts per combination
-  df_sum <- df %>%
-    count(!!sym(x_name), !!sym(y_name), name = "n") %>%
+    ) %>%
     mutate(
-      !!sym(x_name) := factor(.data[[x_name]],
-                              levels = c("Yes", "No")),
-      pct = n / sum(n)
+      !!sym(x_name) := factor(.data[[x_name]], levels = c("Yes", "No"))
     )
 
-  # Build the plot
+  # Calculate proportions for positioning
+  df_plot <- df_clean %>%
+    count(!!sym(x_name), !!sym(y_name), name = "n") %>%
+    group_by(!!sym(x_name)) %>%
+    mutate(
+      total_x = sum(n),
+      prop_y = n / total_x,
+      ymax = cumsum(prop_y),
+      ymin = lag(ymax, default = 0)
+    ) %>%
+    ungroup() %>%
+    mutate(
+      total = sum(n),
+      prop_x = total_x / total,
+      xmax = cumsum(prop_x),
+      xmin = lag(xmax, default = 0)
+    ) %>%
+    group_by(!!sym(x_name)) %>%
+    mutate(
+      xmax_adj = xmax,
+      xmin_adj = xmin
+    ) %>%
+    ungroup()
+
+  # Generate title if not provided
   if (is.na(title)) {
-    title <- paste("Distribution of Tools by", x_name, "and", y_name)
+    title <- paste("Distribution by", x_name, "and", y_name)
   }
 
-  # Create the formula for product
-  formula_x <- as.formula(paste0("~", x_name))
-  formula_y <- as.formula(paste0("~", y_name))
-
-  p <- ggplot(df) +
-    geom_mosaic(aes(
-      x = ggmosaic::product(!!formula_y, !!formula_x),
-      fill = !!sym(y_name)
-    )) +
-    labs(
-      x = x_name,
-      y = y_name,
-      title = title
+  # Create plot
+  p <- ggplot(df_plot, aes(
+    xmin = xmin_adj, xmax = xmax_adj,
+    ymin = ymin, ymax = ymax,
+    fill = !!sym(y_name)
+  )) +
+    geom_rect(color = "white", size = 1) +
+    scale_x_continuous(
+      breaks = df_plot %>%
+        group_by(!!sym(x_name)) %>%
+        summarise(pos = mean(c(xmin_adj, xmax_adj))) %>%
+        pull(pos),
+      labels = df_plot %>%
+        distinct(!!sym(x_name)) %>%
+        pull(!!sym(x_name))
     ) +
-    theme_mosaic() +
+    labs(
+      title = title,
+      x = x_name,
+      y = "Proportion",
+      fill = y_name
+    ) +
+    theme_minimal() +
     theme(
-      axis.text.x = element_text(angle = 45, hjust = 1),
       plot.title = element_text(hjust = 0.5, face = "bold"),
-      legend.position = "none"
+      axis.text.x = element_text(angle = 45, hjust = 1),
+      panel.grid = element_blank()
     )
-
-  # Optional percentage labels
-  if (show_pct) {
-    df_labels <- df_sum %>%
-      group_by(.data[[y_name]]) %>%
-      mutate(
-        xpos = as.numeric(factor(.data[[x_name]])) - 0.5 / n(),
-        ypos = 0.5
-      )
-
-    p <- p +
-      geom_text(
-        data = df_labels,
-        aes(x = xpos, y = ypos, label = percent(pct, accuracy = 0.1)),
-        inherit.aes = FALSE,
-        size = 3,
-        color = "black"
-      )
-  }
 
   return(p)
 }
@@ -106,7 +108,7 @@ mosaic_bin2 <- function(df, x, y, title = NA, show_pct = FALSE) {
 #' Create Summary Table from Mosaic Plot Data
 #'
 #' Generates a summary table with counts and percentages for two categorical
-#' variables, matching the data used in mosaic plots.
+#' variables.
 #'
 #' @param df A data frame containing the variables to summarize.
 #' @param x Unquoted column name for the grouping variable.
@@ -116,14 +118,9 @@ mosaic_bin2 <- function(df, x, y, title = NA, show_pct = FALSE) {
 #'   (pct_within_x), and percentages of the total (pct_total). Includes
 #'   subtotal rows for each x category.
 #'
-#' @details The function applies the same data cleaning filters as
-#'   \code{mosaic_bin2}, removing missing values, empty strings, and "NA" text.
-#'   Percentages are rounded to one decimal place.
-#'
 #' @examples
 #' \dontrun{
-#' mosaic_summary_table(mydata, Aligned.with.national.inventory,
-#'                      External.certification.against.reporting.standard)
+#' mosaic_summary_table(mydata, variable1, variable2)
 #' }
 #'
 #' @import dplyr
@@ -134,7 +131,7 @@ mosaic_summary_table <- function(df, x, y) {
   x_name <- deparse(substitute(x))
   y_name <- deparse(substitute(y))
 
-  # Apply same filters as mosaic function
+  # Apply same filters
   df_clean <- df %>%
     filter(
       !is.na(!!sym(x_name)),
