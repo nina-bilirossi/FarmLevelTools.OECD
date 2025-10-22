@@ -2,27 +2,35 @@
 % Please edit documentation in R/mosaic.R
 \name{mosaic_summary_table}
 \alias{mosaic_summary_table}
-\title{Create a Summary Table for Mosaic Plot Data}
+\title{Create Summary Table from Mosaic Plot Data}
 \usage{
 mosaic_summary_table(df, x, y)
 }
 \arguments{
 \item{df}{A data frame containing the variables to summarize.}
 
-\item{x}{The categorical variable for the x-axis (unquoted).}
+\item{x}{Unquoted column name for the grouping variable.}
 
-\item{y}{The categorical variable for the fill variable (unquoted).}
+\item{y}{Unquoted column name for the fill/category variable.}
 }
 \value{
-A data frame containing counts, within-group percentages, and total percentages.
+A tibble containing counts, percentages within each x category
+(pct_within_x), and percentages of the total (pct_total). Includes
+subtotal rows for each x category.
 }
 \description{
-This function generates a summary table that mirrors the data used in a mosaic plot,
-including counts and percentage breakdowns by each category.
+Generates a summary table with counts and percentages for two categorical
+variables, matching the data used in mosaic plots.
+}
+\details{
+The function applies the same data cleaning filters as
+\code{mosaic_bin2}, removing missing values, empty strings, and "NA" text.
+Percentages are rounded to one decimal place.
 }
 \examples{
 \dontrun{
-mosaic_summary_table(mtcars, cyl, gear)
+mosaic_summary_table(mydata, Aligned.with.national.inventory,
+                     External.certification.against.reporting.standard)
 }
 
 }

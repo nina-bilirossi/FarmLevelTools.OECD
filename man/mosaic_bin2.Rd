@@ -2,40 +2,40 @@
 % Please edit documentation in R/mosaic.R
 \name{mosaic_bin2}
 \alias{mosaic_bin2}
-\title{Mosaic Plot Using String Column Names}
+\title{Create a Binary Mosaic Plot}
 \usage{
 mosaic_bin2(df, x, y, title = NA, show_pct = FALSE)
 }
 \arguments{
-\item{df}{A data frame containing the variables to be plotted.}
+\item{df}{A data frame containing the variables to plot.}
 
-\item{x}{A string giving the name of the categorical variable for the x-axis.}
+\item{x}{Character string. Name of the column to use for the x-axis.}
 
-\item{y}{A string giving the name of the categorical variable for the fill variable.}
+\item{y}{Character string. Name of the column to use for the y-axis (fill).}
 
-\item{title}{Optional plot title. If \code{NA} (default), a title is generated automatically.}
+\item{title}{Character string. Title for the plot. If NA (default), an automatic
+title will be generated.}
 
-\item{show_pct}{Logical; if \code{TRUE}, displays percentage labels on the plot.}
+\item{show_pct}{Logical. If TRUE, displays percentage labels on the plot.
+Default is FALSE.}
 }
 \value{
-A \code{ggplot} object displaying the mosaic plot.
+A ggplot2 object representing the mosaic plot.
 }
 \description{
-This function creates a mosaic plot showing the relationship between two categorical
-variables, where the variable names are supplied as strings. This version is useful
-for programmatic workflows such as loops or \code{purrr::map()}.
+Creates a mosaic plot for visualizing the relationship between two categorical
+variables, with column names passed as strings for programmatic use.
+}
+\details{
+The function automatically filters out missing values, empty strings,
+and "NA" text values from both variables. The x variable is factored with
+levels c("Yes", "No").
 }
 \examples{
 \dontrun{
-library(ggmosaic)
-library(dplyr)
-
-data <- data.frame(
-  ToolUsed = sample(c("Yes", "No"), 100, replace = TRUE),
-  Category = sample(c("A", "B", "C"), 100, replace = TRUE)
-)
-
-mosaic_bin2(data, "ToolUsed", "Category", show_pct = TRUE)
+mosaic_bin2(mydata, "variable1", "variable2")
+mosaic_bin2(mydata, "variable1", "variable2",
+            title = "Custom Title", show_pct = TRUE)
 }
 
 }

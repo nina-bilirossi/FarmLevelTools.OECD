@@ -1,36 +1,38 @@
-#' Mosaic Plot Using String Column Names
+#' Create a Binary Mosaic Plot
 #'
-#' This function creates a mosaic plot showing the relationship between two categorical
-#' variables, where the variable names are supplied as strings. This version is useful
-#' for programmatic workflows such as loops or `purrr::map()`.
+#' Creates a mosaic plot for visualizing the relationship between two categorical
+#' variables, with column names passed as strings for programmatic use.
 #'
-#' @param df A data frame containing the variables to be plotted.
-#' @param x A string giving the name of the categorical variable for the x-axis.
-#' @param y A string giving the name of the categorical variable for the fill variable.
-#' @param title Optional plot title. If `NA` (default), a title is generated automatically.
-#' @param show_pct Logical; if `TRUE`, displays percentage labels on the plot.
+#' @param df A data frame containing the variables to plot.
+#' @param x Character string. Name of the column to use for the x-axis.
+#' @param y Character string. Name of the column to use for the y-axis (fill).
+#' @param title Character string. Title for the plot. If NA (default), an automatic
+#'   title will be generated.
+#' @param show_pct Logical. If TRUE, displays percentage labels on the plot.
+#'   Default is FALSE.
 #'
-#' @return A `ggplot` object displaying the mosaic plot.
+#' @return A ggplot2 object representing the mosaic plot.
+#'
+#' @details The function automatically filters out missing values, empty strings,
+#'   and "NA" text values from both variables. The x variable is factored with
+#'   levels c("Yes", "No").
+#'
 #' @examples
 #' \dontrun{
-#' library(ggmosaic)
-#' library(dplyr)
-#'
-#' data <- data.frame(
-#'   ToolUsed = sample(c("Yes", "No"), 100, replace = TRUE),
-#'   Category = sample(c("A", "B", "C"), 100, replace = TRUE)
-#' )
-#'
-#' mosaic_bin2(data, "ToolUsed", "Category", show_pct = TRUE)
+#' mosaic_bin2(mydata, "variable1", "variable2")
+#' mosaic_bin2(mydata, "variable1", "variable2",
+#'             title = "Custom Title", show_pct = TRUE)
 #' }
 #'
-#' @importFrom dplyr filter count mutate group_by ungroup arrange summarise bind_rows
-#' @importFrom ggplot2 ggplot aes geom_text labs theme element_text
-#' @importFrom ggmosaic geom_mosaic theme_mosaic product
+#' @import ggplot2
+#' @import dplyr
 #' @importFrom rlang sym .data
+#' @importFrom ggmosaic geom_mosaic theme_mosaic
 #' @importFrom scales percent
+#'
 #' @export
 mosaic_bin2 <- function(df, x, y, title = NA, show_pct = FALSE) {
+  # x and y are strings
   x_name <- x
   y_name <- y
 
@@ -43,13 +45,16 @@ mosaic_bin2 <- function(df, x, y, title = NA, show_pct = FALSE) {
       .data[[y_name]] != ""
     )
 
+  # Compute counts per combination
   df_sum <- df %>%
     count(!!sym(x_name), !!sym(y_name), name = "n") %>%
     mutate(
-      !!sym(x_name) := factor(.data[[x_name]], levels = c("Yes", "No")),
+      !!sym(x_name) := factor(.data[[x_name]],
+                              levels = c("Yes", "No")),
       pct = n / sum(n)
     )
 
+  # Build the plot
   if (is.na(title)) {
     title <- paste("Distribution of Tools by", x_name, "and", y_name)
   }
@@ -72,6 +77,7 @@ mosaic_bin2 <- function(df, x, y, title = NA, show_pct = FALSE) {
       legend.position = "none"
     )
 
+  # Optional percentage labels
   if (show_pct) {
     df_labels <- df_sum %>%
       group_by(.data[[y_name]]) %>%
@@ -94,28 +100,38 @@ mosaic_bin2 <- function(df, x, y, title = NA, show_pct = FALSE) {
 }
 
 
-#' Create a Summary Table for Mosaic Plot Data
+#' Create Summary Table from Mosaic Plot Data
 #'
-#' This function generates a summary table that mirrors the data used in a mosaic plot,
-#' including counts and percentage breakdowns by each category.
+#' Generates a summary table with counts and percentages for two categorical
+#' variables, matching the data used in mosaic plots.
 #'
 #' @param df A data frame containing the variables to summarize.
-#' @param x The categorical variable for the x-axis (unquoted).
-#' @param y The categorical variable for the fill variable (unquoted).
+#' @param x Unquoted column name for the grouping variable.
+#' @param y Unquoted column name for the fill/category variable.
 #'
-#' @return A data frame containing counts, within-group percentages, and total percentages.
+#' @return A tibble containing counts, percentages within each x category
+#'   (pct_within_x), and percentages of the total (pct_total). Includes
+#'   subtotal rows for each x category.
+#'
+#' @details The function applies the same data cleaning filters as
+#'   \code{mosaic_bin2}, removing missing values, empty strings, and "NA" text.
+#'   Percentages are rounded to one decimal place.
+#'
 #' @examples
 #' \dontrun{
-#' mosaic_summary_table(mtcars, cyl, gear)
+#' mosaic_summary_table(mydata, Aligned.with.national.inventory,
+#'                      External.certification.against.reporting.standard)
 #' }
 #'
-#' @importFrom dplyr filter count mutate group_by ungroup arrange summarise bind_rows
+#' @import dplyr
 #' @importFrom rlang sym .data
+#'
 #' @export
 mosaic_summary_table <- function(df, x, y) {
   x_name <- deparse(substitute(x))
   y_name <- deparse(substitute(y))
 
+  # Apply same filters as mosaic function
   df_clean <- df %>%
     filter(
       !is.na(!!sym(x_name)),
@@ -125,6 +141,7 @@ mosaic_summary_table <- function(df, x, y) {
       .data[[y_name]] != ""
     )
 
+  # Create summary with counts and percentages
   summary_table <- df_clean %>%
     count(!!sym(x_name), !!sym(y_name), name = "count") %>%
     group_by(!!sym(x_name)) %>%
@@ -135,6 +152,7 @@ mosaic_summary_table <- function(df, x, y) {
     ungroup() %>%
     arrange(!!sym(x_name), !!sym(y_name))
 
+  # Add totals row
   totals <- summary_table %>%
     group_by(!!sym(x_name)) %>%
     summarise(
@@ -144,6 +162,7 @@ mosaic_summary_table <- function(df, x, y) {
       pct_total = sum(pct_total)
     )
 
+  # Combine and format
   final_table <- bind_rows(summary_table, totals) %>%
     mutate(
       pct_within_x = round(pct_within_x, 1),
