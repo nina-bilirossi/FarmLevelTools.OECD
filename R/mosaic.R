@@ -59,11 +59,14 @@ mosaic_bin2 <- function(df, x, y, title = NA, show_pct = FALSE) {
     title <- paste("Distribution of Tools by", x_name, "and", y_name)
   }
 
-  p <- ggplot(df_sum) +
+  # Create the formula for product
+  formula_x <- as.formula(paste0("~", x_name))
+  formula_y <- as.formula(paste0("~", y_name))
+
+  p <- ggplot(df) +
     geom_mosaic(aes(
-      x = ggmosaic::product(!!sym(x_name)),
-      fill = !!sym(y_name),
-      weight = n
+      x = ggmosaic::product(!!formula_y, !!formula_x),
+      fill = !!sym(y_name)
     )) +
     labs(
       x = x_name,
