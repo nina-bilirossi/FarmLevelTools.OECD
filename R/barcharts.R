@@ -133,6 +133,7 @@ plot_category_counts <- function(df_wide,
                                  show_counts = TRUE,
                                  top_n = NULL) {
 
+  n_tools = nrow(df_wide)
   # Determine which columns to count
   if (is.null(id_col)) {
     # If no ID column specified, use all columns
@@ -168,7 +169,8 @@ plot_category_counts <- function(df_wide,
     ggplot2::labs(
       title = title,
       x = x_label,
-      y = y_label
+      y = y_label,
+      caption = paste0("Number of tools: ", n_tools)
     ) +
     ggplot2::theme_minimal() +
     ggplot2::theme(
