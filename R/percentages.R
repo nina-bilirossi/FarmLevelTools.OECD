@@ -5,6 +5,7 @@
 #'
 #' @param df A data frame containing the variable to summarize.
 #' @param column Character string or unquoted column name.
+#' @param title Text to be inserted at the top, in the format "Summary for TITLE". Default is column name.
 #' @param exclude_na Logical. If TRUE (default), excludes NA values from the summary.
 #' @param exclude_empty Logical. If TRUE (default), excludes empty strings.
 #' @param sort_desc Logical. If TRUE (default), sorts results by count in descending order.
@@ -22,7 +23,7 @@
 #' @importFrom rlang enquo quo_name
 #'
 #' @export
-response_summary <- function(df, column, exclude_na = TRUE, exclude_empty = TRUE, sort_desc = TRUE) {
+response_summary <- function(df, column, title = NA, exclude_na = TRUE, exclude_empty = TRUE, sort_desc = TRUE) {
 
   # Handle both quoted and unquoted column names
   col_enquo <- enquo(column)
@@ -63,7 +64,9 @@ response_summary <- function(df, column, exclude_na = TRUE, exclude_empty = TRUE
 
   # Print formatted output
   cat("\n")
-  cat("Summary for:", col_name, "\n")
+  if(title == NA){cat("Summary for:", col_name, "\n")}
+  else{cat("Summary for:", title, "\n")}
+
   cat(strrep("=", nchar(col_name) + 13), "\n\n")
 
   total <- sum(summary_df$count)

@@ -7,6 +7,7 @@
 response_summary(
   df,
   column,
+  title = NA,
   exclude_na = TRUE,
   exclude_empty = TRUE,
   sort_desc = TRUE
@@ -16,6 +17,8 @@ response_summary(
 \item{df}{A data frame containing the variable to summarize.}
 
 \item{column}{Character string or unquoted column name.}
+
+\item{title}{Text to be inserted at the top, in the format "Summary for TITLE". Default is column name.}
 
 \item{exclude_na}{Logical. If TRUE (default), excludes NA values from the summary.}
 
