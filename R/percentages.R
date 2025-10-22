@@ -64,7 +64,7 @@ response_summary <- function(df, column, title = NA, exclude_na = TRUE, exclude_
 
   # Print formatted output
   cat("\n")
-  if(title == NA){cat("Summary for:", col_name, "\n")}
+  if(is.na(title)){cat("Summary for:", col_name, "\n")}
   else{cat("Summary for:", title, "\n")}
 
   cat(strrep("=", nchar(col_name) + 13), "\n\n")
@@ -148,3 +148,4 @@ response_summary_compact <- function(df, column, exclude_na = TRUE, exclude_empt
 
   invisible(summary_df)
 }
+
