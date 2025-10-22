@@ -247,3 +247,66 @@ ordered_horizontal_barchart <- function(database,
       y = y_label
     )
 }
+
+#' Create a bar chart of a categorical variable against a binary variable (Yes/No)
+#'
+#' @param database A data frame containing the variables to plot.
+#' @param cat_x Categorical variable for the x-axis.
+#' @param bin_y Binary variable for the fill/color (Yes/No).
+#' @param title Plot title. Defaults to "".
+#' @param x_title X-axis label. Defaults to "".
+#' @param legend_title Legend title. Defaults to "".
+#' @param caption Optional caption. If NA (default), shows number of tools.
+#' @param position Bar position: "stack" (default), "dodge", or "fill".
+#'
+#' @return A ggplot2 object.
+#'
+#' @examples
+#' \dontrun{
+#' categorical_X_binary_Y_chart(database, Type.of.tool, Open.source)
+#' categorical_X_binary_Y_chart(database, Type.of.tool, Open.source,
+#'                               position = "dodge")
+#' }
+#'
+#' @import ggplot2
+#' @import dplyr
+#' @importFrom glue glue
+#'
+#' @export
+categorical_X_binary_Y_chart <- function(database, cat_x, bin_y, title = "",
+                                         x_title = "", legend_title = "",
+                                         caption = NA, position = "stack") {
+
+  data_filtered <- database |>
+    dplyr::filter(!is.na({{cat_x}}), {{cat_x}} != "",
+                  !is.na({{bin_y}}), {{bin_y}} != "", {{bin_y}} != "Pending") |>
+    dplyr::mutate(
+      cat_x = factor({{cat_x}}),
+      bin_y = factor(
+        {{bin_y}},
+        levels = c("Yes", "No", "Not applicable (model-agnostic)", "NA")
+      )
+    )
+
+  n_tools <- nrow(data_filtered)
+
+  if (is.na(caption)) {
+    caption <- glue::glue('Number of tools: {n_tools}')
+  }
+
+  # Plot
+  ggplot2::ggplot(data_filtered, ggplot2::aes(x = cat_x, fill = bin_y)) +
+    ggplot2::geom_bar(position = position) +
+    ggplot2::theme_minimal() +
+    ggplot2::labs(
+      title = title,
+      x = x_title,
+      y = "number of tools",
+      fill = legend_title,
+      caption = caption
+    ) +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      plot.title = ggplot2::element_text(hjust = 0.5, face = "bold")
+    )
+}
