@@ -61,7 +61,7 @@ mosaic_bin2 <- function(df, x, y, title = NA, show_pct = FALSE) {
 
   p <- ggplot(df_sum) +
     geom_mosaic(aes(
-      x = product(!!sym(x_name)),
+      x = ggmosaic::product(!!sym(x_name)),
       fill = !!sym(y_name),
       weight = n
     )) +

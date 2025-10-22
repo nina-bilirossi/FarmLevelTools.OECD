@@ -58,7 +58,7 @@ yes_no_histogram <- function(database, bin_x, title = "") {
         levels = c("Yes", "No", "Not Applicable (model-agnostic)")
       )
     )
-
+  n_tools = nrow(data_filtered)
   # Compute percentages
   plot_data <- data_filtered |>
     dplyr::group_by({{bin_x}}) |>
@@ -74,7 +74,8 @@ yes_no_histogram <- function(database, bin_x, title = "") {
     ggplot2::labs(
       title = title,
       x = "",
-      y = "% of tools"
+      y = "% of tools",
+      caption = paste0("Number of tools: ", n_tools)
     ) +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(angle = 30, hjust = 1, vjust = 1),
