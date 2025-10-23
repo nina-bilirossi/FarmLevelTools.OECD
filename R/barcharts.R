@@ -311,3 +311,160 @@ categorical_X_binary_Y_chart <- function(database, cat_x, bin_y, title = "",
       plot.title = ggplot2::element_text(hjust = 0.5, face = "bold")
     )
 }
+
+#' Plot Geographic Scope of Tools
+#'
+#' Creates a bar chart showing the distribution of tools by their geographic scope,
+#' categorizing them by number of countries covered or regional scope (Global/Europe).
+#'
+#' @param df A data frame containing tool information with geographic scope data.
+#' @param country_col Character string specifying the column name containing country/scope information.
+#'   Default is "Countries..Scope".
+#' @param title Character string for the plot title.
+#'   Default is "Number of Tools by Geographic Scope".
+#' @param fill_color Character string specifying the bar fill color.
+#'   Default is "steelblue".
+#'
+#' @return A ggplot2 object showing the distribution of tools by geographic scope.
+#'   Also prints summary statistics to the console.
+#'
+#' @details
+#' The function categorizes tools into the following scope categories:
+#' \itemize{
+#'   \item Global: Tools marked as "Global"
+#'   \item Europe: Tools marked as "Europe"
+#'   \item 1-5 countries: Tools covering specific numbers of countries
+#'   \item 6+ countries: Tools covering six or more countries
+#'   \item Unspecified: Tools with no scope information
+#' }
+#'
+#' Countries should be comma-separated in the scope column. The function
+#' excludes "Global" and "Europe" when counting individual countries.
+#'
+#' @examples
+#' \dontrun{
+#' # Basic usage
+#' plot_country_scope(database)
+#'
+#' # Custom parameters
+#' plot_country_scope(
+#'   df = my_data,
+#'   country_col = "geographic_scope",
+#'   title = "Tool Distribution by Region",
+#'   fill_color = "coral"
+#' )
+#' }
+#'
+#' @import ggplot2
+#' @importFrom dplyr filter mutate group_by summarise case_when sym
+#'
+#' @export
+plot_country_scope <- function(df,
+                               country_col = "Countries..Scope",
+                               title = "Number of Tools by Geographic Scope",
+                               fill_color = "steelblue") {
+
+  # Validate inputs
+  if (!is.data.frame(df)) {
+    stop("df must be a data frame")
+  }
+
+  if (!country_col %in% names(df)) {
+    stop(paste0("Column '", country_col, "' not found in data frame"))
+  }
+
+  # Filter out empty scope entries
+  clean_df <- df |>
+    dplyr::filter(.data[[country_col]] != "")
+
+  n_tools <- nrow(clean_df)
+
+  if (n_tools == 0) {
+    warning("No tools with non-empty geographic scope found")
+    return(NULL)
+  }
+
+  # Create a categorization of scope
+  scope_summary <- clean_df |>
+    dplyr::mutate(
+      # Split countries by comma and trim whitespace
+      countries_list = strsplit(as.character(.data[[country_col]]), ","),
+      countries_clean = lapply(.data$countries_list, function(x) trimws(x)),
+
+      # Count number of countries (excluding Global and Europe)
+      num_countries = sapply(.data$countries_clean, function(x) {
+        # Remove empty strings, NA, Global, and Europe
+        x_filtered <- x[x != "" & !is.na(x) &
+                          tolower(x) != "global" &
+                          tolower(x) != "europe"]
+        length(x_filtered)
+      }),
+
+      # Check if Global or Europe is present
+      has_global = sapply(.data$countries_clean, function(x) {
+        any(tolower(x) %in% c("global"))
+      }),
+      has_europe = sapply(.data$countries_clean, function(x) {
+        any(tolower(x) %in% c("europe"))
+      }),
+
+      # Create scope category
+      scope_category = dplyr::case_when(
+        .data$has_global ~ "Global",
+        .data$has_europe ~ "Europe",
+        .data$num_countries == 0 ~ "Unspecified",
+        .data$num_countries == 1 ~ "1 country",
+        .data$num_countries == 2 ~ "2 countries",
+        .data$num_countries == 3 ~ "3 countries",
+        .data$num_countries == 4 ~ "4 countries",
+        .data$num_countries == 5 ~ "5 countries",
+        .data$num_countries >= 6 ~ "6+ countries",
+        TRUE ~ "Other"
+      )
+    )
+
+  # Count tools in each category
+  scope_counts <- scope_summary |>
+    dplyr::group_by(.data$scope_category) |>
+    dplyr::summarise(count = dplyr::n(), .groups = "drop")
+
+  # Define order for categories
+  category_order <- c("Global", "Europe", "6+ countries", "5 countries",
+                      "4 countries", "3 countries", "2 countries",
+                      "1 country", "Unspecified")
+
+  # Filter to only categories present in data and order
+  scope_counts$scope_category <- factor(
+    scope_counts$scope_category,
+    levels = category_order[category_order %in% scope_counts$scope_category]
+  )
+
+  scope_counts <- scope_counts[order(scope_counts$scope_category), ]
+
+  # Create bar chart
+  p <- ggplot2::ggplot(scope_counts, ggplot2::aes(x = .data$scope_category, y = .data$count)) +
+    ggplot2::geom_bar(stat = "identity", fill = fill_color) +
+    ggplot2::geom_text(ggplot2::aes(label = .data$count), vjust = -0.5, size = 3.5) +
+    ggplot2::labs(
+      title = title,
+      x = "Geographic Scope",
+      y = "Number of Tools",
+      caption = paste0("Number of tools: ", n_tools)
+    ) +
+    ggplot2::theme_minimal() +
+    ggplot2::theme(
+      axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
+      plot.title = ggplot2::element_text(hjust = 0.5, face = "bold")
+    )
+
+  # Print summary statistics
+  cat("\nSummary Statistics:\n")
+  cat("Tools with country-specific scope (1 country):",
+      sum(scope_counts$count[scope_counts$scope_category == "1 country"], na.rm = TRUE), "\n")
+  cat("Tools with Global scope:",
+      sum(scope_counts$count[scope_counts$scope_category == "Global"], na.rm = TRUE), "\n")
+  cat("Tools with Europe scope:",
+      sum(scope_counts$count[scope_counts$scope_category == "Europe"], na.rm = TRUE), "\n")
+
+  return(p)
+}
