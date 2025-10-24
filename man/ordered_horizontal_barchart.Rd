@@ -35,6 +35,7 @@ A ggplot2 object
 \description{
 Creates a horizontal bar chart with categories ordered by frequency (descending).
 Automatically filters out NA values, empty strings, and "#N/A" entries.
+Displays count values next to each bar.
 }
 \examples{
 ordered_horizontal_barchart(database, Initiative...Partnership.type,

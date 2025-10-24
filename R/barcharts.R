@@ -186,11 +186,11 @@ plot_category_counts <- function(df_wide,
 
   return(p)
 }
-
 #' Create an ordered horizontal bar chart for categorical variables
 #'
 #' Creates a horizontal bar chart with categories ordered by frequency (descending).
 #' Automatically filters out NA values, empty strings, and "#N/A" entries.
+#' Displays count values next to each bar.
 #'
 #' @param database A dataframe containing the data
 #' @param category_var The column name (unquoted) to be plotted
@@ -212,42 +212,45 @@ ordered_horizontal_barchart <- function(database,
                                         y_label = "Count",
                                         fill_color = "steelblue",
                                         descending = TRUE) {
-
   # Filter out NA, empty strings, and #N/A
   data_filtered <- database |>
     dplyr::filter(!is.na({{category_var}}),
                   {{category_var}} != "",
                   {{category_var}} != "#N/A")
-
   # Count occurrences and create ordering
   category_counts <- data_filtered |>
     dplyr::count({{category_var}}, name = "value")
-
   # Order based on descending parameter
   if (descending) {
     category_counts <- category_counts |> dplyr::arrange(dplyr::desc(value))
   } else {
     category_counts <- category_counts |> dplyr::arrange(value)
   }
-
   # Reorder factor levels
   data_filtered <- data_filtered |>
     dplyr::mutate({{category_var}} := factor(
       {{category_var}},
       levels = category_counts |> dplyr::pull({{category_var}})
     ))
-
-  # Plot horizontal bar chart
+  n_tools <- nrow(data_filtered)
+  # Plot horizontal bar chart with count labels
   ggplot2::ggplot(data_filtered, ggplot2::aes(x = {{category_var}})) +
     ggplot2::geom_bar(fill = fill_color) +
+    ggplot2::geom_text(stat = 'count',
+                       ggplot2::aes(label = ggplot2::after_stat(count)),
+                       hjust = -0.2,
+                       size = 3.5) +
     ggplot2::coord_flip() +
     ggplot2::theme_minimal() +
     ggplot2::labs(
       title = title,
       x = x_label,
-      y = y_label
-    )
+      y = y_label,
+      caption = paste0("Number of tools: ", n_tools)
+    ) +
+    ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.15)))
 }
+
 
 #' Create a bar chart of a categorical variable against a binary variable (Yes/No)
 #'
