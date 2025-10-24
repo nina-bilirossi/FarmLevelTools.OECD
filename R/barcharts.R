@@ -1,3 +1,60 @@
+
+#' Create a vertical bar chart for categorical variables with count labels
+#'
+#' Creates a vertical bar chart with count labels displayed above each bar.
+#' Automatically filters out NA values, empty strings, and "#N/A" entries.
+#'
+#' @param database A dataframe containing the data
+#' @param category_var The column name (unquoted) to be plotted
+#' @param title Character string for the plot title. Default is "Distribution of Categories"
+#' @param x_label Character string for the x-axis label. Default is ""
+#' @param y_label Character string for the y-axis label. Default is "Count"
+#' @param fill_color Character string specifying the fill color for bars. Default is "coral"
+#' @param text_color Character string specifying the color for count labels. Default is "darkred"
+#' @return A ggplot2 object
+#' @examples
+#' vertical_barchart(database, Formal.updating.procedure..Emission.factors,
+#'                   title = "Formal Updating Procedures")
+#' vertical_barchart(database, Country, title = "Tools by Country",
+#'                   fill_color = "steelblue", text_color = "darkblue")
+#' @export
+vertical_barchart <- function(database,
+                              category_var,
+                              title = "Distribution of Categories",
+                              x_label = "",
+                              y_label = "Count",
+                              fill_color = "coral",
+                              text_color = "darkred") {
+  # Filter out NA, empty strings, and #N/A
+  data_filtered <- database |>
+    dplyr::filter(!is.na({{category_var}}),
+                  {{category_var}} != "",
+                  {{category_var}} != "#N/A")
+
+  n_tools <- nrow(data_filtered)
+
+  # Plot vertical bar chart with count labels
+  ggplot2::ggplot(data_filtered, ggplot2::aes(x = {{category_var}})) +
+    ggplot2::geom_bar(fill = fill_color) +
+    ggplot2::geom_text(stat = 'count',
+                       ggplot2::aes(label = ggplot2::after_stat(count)),
+                       hjust = 0.5,
+                       vjust = -0.5,
+                       size = 3.5,
+                       color = text_color) +
+    ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.15))) +
+    ggplot2::theme_minimal() +
+    ggplot2::labs(
+      title = title,
+      x = x_label,
+      y = y_label,
+      caption = paste0("Number of tools: ", n_tools)
+    )
+}
+
+
+
+
 #' Create a bar chart of a binary variable (Yes/No) against a categorical variable
 #' @param bin_x binary variable
 #' @param cat_y categorical variable

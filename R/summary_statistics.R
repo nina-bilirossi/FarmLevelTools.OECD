@@ -17,8 +17,10 @@ get_combo_stats <- function(database,
   # Filter out NA, empty strings, and #N/A
   data_filtered <- database |>
     dplyr::filter(!is.na({{category_var}}),
-                  {{category_var}} != "",
-                  {{category_var}} != "#N/A")
+                  {{category_var}} != "")
+  
+                  # uncomment this line to kick out NAs
+                  # ,{{category_var}} != "#N/A")
   
   # Count occurrences and calculate percentages
   category_stats <- data_filtered |>
