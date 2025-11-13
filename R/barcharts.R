@@ -99,7 +99,7 @@ vertical_barchart <- function(database,
                        size = 3.5,
                        color = text_color) +
     ggplot2::scale_y_continuous(expand = ggplot2::expansion(mult = c(0, 0.15))) +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_oecd() +
     ggplot2::labs(
       title = title,
       x = x_label,
@@ -146,7 +146,7 @@ binary_X_categorical_Y_chart <- function(database, bin_x, cat_y, title = "",
   # Plot
   ggplot2::ggplot(data_filtered, ggplot2::aes(x = bin_x, fill = cat_y)) +
     ggplot2::geom_bar() +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_oecd() +
     ggplot2::labs(
       title = title,
       x = x_title,
@@ -184,7 +184,7 @@ yes_no_histogram <- function(database, bin_x, title = "") {
     ggplot2::geom_col(fill = "#3B82F6", width = 0.6) +
     ggplot2::geom_text(ggplot2::aes(label = paste0(round(percent, 1), "%")),
                        vjust = -0.5, size = 4.2, color = "black") +
-    ggplot2::theme_minimal(base_size = 13) +
+    ggplot2::theme_oecd(base_size = 13) +
     ggplot2::labs(
       title = title,
       x = "",
@@ -301,7 +301,7 @@ plot_category_counts <- function(df_wide,
       y = y_label,
       caption = paste0("Number of tools: ", n_tools)
     ) +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_oecd() +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
       plot.title = ggplot2::element_text(hjust = 0.5, face = "bold")
@@ -372,7 +372,7 @@ ordered_horizontal_barchart <- function(database,
                        hjust = -0.2,
                        size = 3.5) +
     ggplot2::coord_flip() +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_oecd() +
     ggplot2::labs(
       title = title,
       x = x_label,
@@ -453,7 +453,7 @@ categorical_X_binary_Y_chart <- function(database, cat_x, bin_y, title = "",
   # Plot
   p <- ggplot2::ggplot(data_filtered, ggplot2::aes(x = cat_x, fill = bin_y)) +
     ggplot2::geom_bar(position = position) +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_oecd() +
     ggplot2::labs(
       title = title,
       x = x_title,
@@ -635,7 +635,7 @@ plot_country_scope <- function(df,
       y = "Number of Tools",
       caption = paste0("Number of tools: ", n_tools)
     ) +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_oecd() +
     ggplot2::theme(
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
       plot.title = ggplot2::element_text(hjust = 0.5, face = "bold")

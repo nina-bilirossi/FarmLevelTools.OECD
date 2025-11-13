@@ -48,7 +48,7 @@ active_tools <- function(database, ownership = FALSE, precision = TRUE, legend =
     # Plot stacked histogram
     p <- ggplot2::ggplot(active_counts, ggplot2::aes(x = Year, y = Active_Tools, fill = Initiative...Partnership.type)) +
       ggplot2::geom_col() +
-      ggplot2::theme_minimal() +
+      ggplot2::theme_oecd() +
       ggplot2::labs(
         title = "Active Tools Over Time by Ownership",
         x = "Year",
@@ -75,7 +75,7 @@ active_tools <- function(database, ownership = FALSE, precision = TRUE, legend =
     # Plot
     ggplot2::ggplot(active_df, ggplot2::aes(x = Year, y = Active_Tools)) +
       ggplot2::geom_col(fill = "steelblue") +
-      ggplot2::theme_minimal() +
+      ggplot2::theme_oecd() +
       ggplot2::labs(
         title = "Number of Active Tools Over Time",
         x = "Year",
@@ -152,7 +152,7 @@ plot_yoy_growth <- function(yoy_df, metric = "absolute") {
     p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = Year, y = YoY_Increase)) +
       ggplot2::geom_col(fill = "steelblue") +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
-      ggplot2::theme_minimal() +
+      ggplot2::theme_oecd() +
       ggplot2::labs(
         title = "Year-on-Year Increase in Active Tools",
         x = "Year",
@@ -162,7 +162,7 @@ plot_yoy_growth <- function(yoy_df, metric = "absolute") {
     p <- ggplot2::ggplot(plot_data, ggplot2::aes(x = Year, y = YoY_Percent_Change)) +
       ggplot2::geom_col(fill = "darkgreen") +
       ggplot2::geom_hline(yintercept = 0, linetype = "dashed", color = "gray50") +
-      ggplot2::theme_minimal() +
+      ggplot2::theme_oecd() +
       ggplot2::labs(
         title = "Year-on-Year Percentage Change in Active Tools",
         x = "Year",
@@ -175,7 +175,7 @@ plot_yoy_growth <- function(yoy_df, metric = "absolute") {
       ggplot2::geom_point(ggplot2::aes(y = YoY_Increase, color = "Absolute Change"), size = 2) +
       ggplot2::geom_line(ggplot2::aes(y = YoY_Percent_Change, color = "Percent Change"), linewidth = 1) +
       ggplot2::geom_point(ggplot2::aes(y = YoY_Percent_Change, color = "Percent Change"), size = 2) +
-      ggplot2::theme_minimal() +
+      ggplot2::theme_oecd() +
       ggplot2::labs(
         title = "Year-on-Year Growth in Active Tools",
         x = "Year",
@@ -247,7 +247,7 @@ calculate_avg_yoy_recent <- function(database, years = 5, thisyear = as.numeric(
 release_histogram <- function(database){
   ggplot2::ggplot(database, ggplot2::aes(x = Year.of.release)) +
     ggplot2::geom_bar(fill = "steelblue") +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_oecd() +
     ggplot2::labs(
       title = "Number of Tools by Release Year",
       x = "Year of Release",
@@ -265,7 +265,7 @@ latest_update_histogram <- function(database){
   ggplot2::ggplot(database |> dplyr::filter(!is.na(Latest.update), Latest.update != ""),
                   ggplot2::aes(x = Latest.update)) +
     ggplot2::geom_bar(fill = "forestgreen") +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_oecd() +
     ggplot2::labs(
       title = "Last Updated Status of Tools",
       x = "Last Updated",
@@ -284,7 +284,7 @@ active_histogram <- function(database){
                   ggplot2::aes(x = Still.active., fill = Still.active.)) +
     ggplot2::geom_bar() +
     ggplot2::scale_fill_manual(values = c("Yes" = "green", "No" = "red")) +
-    ggplot2::theme_minimal() +
+    ggplot2::theme_oecd() +
     ggplot2::labs(
       title = "Active Tools",
       x = "",
