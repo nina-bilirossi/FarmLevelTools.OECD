@@ -9,7 +9,7 @@ theme_oecd(
   base_family = "Arial Narrow OECD",
   base_line_size = base_size/22,
   base_rect_size = base_size/22,
-  base_background = "white",
+  base_background = "gray",
   base_x_axis_angle = 45,
   base_col_width = 0.7
 )
