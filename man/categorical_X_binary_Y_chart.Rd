@@ -12,7 +12,10 @@ categorical_X_binary_Y_chart(
   x_title = "",
   legend_title = "",
   caption = NA,
-  position = "stack"
+  position = "stack",
+  colors = c(Yes = "#4CAF50", No = "#F44336"),
+  bin_order = c("Yes", "No", "Not applicable (model-agnostic)", "NA"),
+  cat_order = NULL
 )
 }
 \arguments{
@@ -31,6 +34,12 @@ categorical_X_binary_Y_chart(
 \item{caption}{Optional caption. If NA (default), shows number of tools.}
 
 \item{position}{Bar position: "stack" (default), "dodge", or "fill".}
+
+\item{colors}{Named vector of colors for Yes/No. Defaults to c("Yes" = "#4CAF50", "No" = "#F44336").}
+
+\item{bin_order}{Order of binary variable levels. Defaults to c("Yes", "No", "Not applicable (model-agnostic)", "NA").}
+
+\item{cat_order}{Optional vector specifying the order of categories on x-axis. If NULL, uses default ordering.}
 }
 \value{
 A ggplot2 object.
@@ -41,8 +50,18 @@ Create a bar chart of a categorical variable against a binary variable (Yes/No)
 \examples{
 \dontrun{
 categorical_X_binary_Y_chart(database, Type.of.tool, Open.source)
+
+# Custom colors
 categorical_X_binary_Y_chart(database, Type.of.tool, Open.source,
-                              position = "dodge")
+                              colors = c("Yes" = "blue", "No" = "red"))
+
+# Reverse Yes/No order (No on top)
+categorical_X_binary_Y_chart(database, Type.of.tool, Open.source,
+                              bin_order = c("No", "Yes"))
+
+# Custom x-axis order
+categorical_X_binary_Y_chart(database, Type.of.tool, Open.source,
+                              cat_order = c("Tool1", "Tool2", "Tool3"))
 }
 
 }

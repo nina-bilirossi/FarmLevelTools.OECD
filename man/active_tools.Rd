@@ -8,6 +8,7 @@ active_tools(
   database,
   ownership = FALSE,
   precision = TRUE,
+  legend = TRUE,
   thisyear = as.numeric(format(Sys.Date(), "\%Y"))
 )
 }

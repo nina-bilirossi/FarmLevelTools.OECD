@@ -1,4 +1,5 @@
 
+
 #' Create a vertical bar chart for categorical variables with count labels
 #'
 #' Creates a vertical bar chart with count labels displayed above each bar.
@@ -9,27 +10,82 @@
 #' @param title Character string for the plot title. Default is "Distribution of Categories"
 #' @param x_label Character string for the x-axis label. Default is ""
 #' @param y_label Character string for the y-axis label. Default is "Count"
-#' @param fill_color Character string specifying the fill color for bars. Default is "coral"
-#' @param text_color Character string specifying the color for count labels. Default is "darkred"
+#' @param fill_color Character string specifying the fill color for bars. Default is "steelblue"
+#' @param text_color Character string specifying the color for count labels. Default is "black"
+#' @param order Character vector specifying the desired order of categories on the x-axis.
+#'   If NULL (default), uses the natural order of the data.
+#' @param show_na Logical indicating whether to include NA values in the plot. Default is FALSE.
 #' @return A ggplot2 object
 #' @examples
 #' vertical_barchart(database, Formal.updating.procedure..Emission.factors,
 #'                   title = "Formal Updating Procedures")
 #' vertical_barchart(database, Country, title = "Tools by Country",
 #'                   fill_color = "steelblue", text_color = "darkblue")
+#' vertical_barchart(database, Status, title = "Project Status",
+#'                   order = c("Planning", "In Progress", "Completed"))
+#' vertical_barchart(database, Country, title = "Tools by Country",
+#'                   show_na = TRUE)
 #' @export
 vertical_barchart <- function(database,
                               category_var,
                               title = "Distribution of Categories",
                               x_label = "",
                               y_label = "Count",
-                              fill_color = "coral",
-                              text_color = "darkred") {
-  # Filter out NA, empty strings, and #N/A
-  data_filtered <- database |>
-    dplyr::filter(!is.na({{category_var}}),
-                  {{category_var}} != "",
-                  {{category_var}} != "#N/A")
+                              fill_color = "steelblue",
+                              text_color = "black",
+                              order = NULL,
+                              show_na = TRUE) {
+  # Filter out empty strings and #N/A (always)
+  # Conditionally filter out NA values based on show_na parameter
+
+  disaggregate_target <- function(df, target_col) {
+    # Split the comma-separated values and create long format
+    df_long <- df |>
+      dplyr::select(dplyr::all_of(c("Tool", target_col))) |>
+      # Convert to character and replace blanks with "NA"
+      dplyr::mutate(!!rlang::sym(target_col) := as.character(!!rlang::sym(target_col)),
+                    !!rlang::sym(target_col) := dplyr::if_else(
+                      !!rlang::sym(target_col) == "" | is.na(!!rlang::sym(target_col)),
+                      "NA",
+                      !!rlang::sym(target_col)
+                    )) |>
+      tidyr::separate_rows(!!rlang::sym(target_col), sep = ",") |>
+      dplyr::mutate(!!rlang::sym(target_col) := trimws(!!rlang::sym(target_col))) |>
+      dplyr::filter(!!rlang::sym(target_col) != "") |>
+      dplyr::distinct(Tool, !!rlang::sym(target_col), .keep_all = TRUE) |>
+      dplyr::mutate(value = 1)
+
+    #print(df_long, n = 500)
+    # Pivot to wide format
+    df_wide <- df_long |>
+      tidyr::pivot_wider(
+        names_from = !!rlang::sym(target_col),
+        values_from = value,
+        values_fill = 0
+      )
+
+    return(df_wide)
+  }
+
+  if (show_na) {
+    data_filtered <- database |>
+      dplyr::mutate({{category_var}} := dplyr::if_else(
+        {{category_var}} == "" | {{category_var}} == "#N/A",
+        NA_character_,
+        as.character({{category_var}})
+      ))
+  } else {
+    data_filtered <- database |>
+      dplyr::filter(!is.na({{category_var}}),
+                    {{category_var}} != "",
+                    {{category_var}} != "#N/A")
+  }
+
+  # Apply ordering if specified
+  if (!is.null(order)) {
+    data_filtered <- data_filtered |>
+      dplyr::mutate({{category_var}} := factor({{category_var}}, levels = order))
+  }
 
   n_tools <- nrow(data_filtered)
 
@@ -51,6 +107,7 @@ vertical_barchart <- function(database,
       caption = paste0("Number of tools: ", n_tools)
     )
 }
+
 
 
 
@@ -142,6 +199,8 @@ yes_no_histogram <- function(database, bin_x, title = "") {
 }
 
 
+
+
 #' Plot Counts of Categorical Variables from Wide-Format Data
 #'
 #' Creates a bar chart showing the sum of values for each categorical column in
@@ -158,13 +217,15 @@ yes_no_histogram <- function(database, bin_x, title = "") {
 #' @param x_label Character string for the x-axis label. Default is "Category".
 #' @param y_label Character string for the y-axis label. Default is "Count".
 #' @param fill_color Character string specifying the fill color for bars.
-#'   Default is "darkgreen". Can be any valid color name or hex code.
+#'   Default is "steelblue". Can be any valid color name or hex code.
 #' @param sort_descending Logical indicating whether to sort categories by count
-#'   in descending order. Default is \code{TRUE}.
+#'   in descending order. Default is \code{TRUE}. Ignored if \code{order} is specified.
 #' @param show_counts Logical indicating whether to display count labels above
 #'   bars. Default is \code{TRUE}.
-#' @param top_n Numberindicating whether how many categories to be displayed (starting from the most frequent).
-#' Default is \code{NULL}.
+#' @param top_n Number indicating how many categories to be displayed (starting from the most frequent).
+#'   Default is \code{NULL}.
+#' @param order Character vector specifying the desired order of categories on the x-axis.
+#'   If provided, this supersedes \code{sort_descending}. Default is \code{NULL}.
 #'
 #' @return A \code{ggplot2} object that can be further customized or displayed.
 #'
@@ -180,16 +241,18 @@ yes_no_histogram <- function(database, bin_x, title = "") {
 #' @examples
 #' df_wide <- disaggregate_target(database, "Main.target.user.or.client.group")
 #' plot_category_counts(df_wide, "Tool")
+#' plot_category_counts(df_wide, "Tool", order = c("Category A", "Category B", "Category C"))
 #' @export
 plot_category_counts <- function(df_wide,
                                  id_col = NULL,
                                  title = "Category Counts",
                                  x_label = "Category",
                                  y_label = "Count",
-                                 fill_color = "darkgreen",
+                                 fill_color = "steelblue",
                                  sort_descending = TRUE,
                                  show_counts = TRUE,
-                                 top_n = NULL) {
+                                 top_n = NULL,
+                                 order = NULL) {
 
   n_tools = nrow(df_wide)
   # Determine which columns to count
@@ -207,8 +270,16 @@ plot_category_counts <- function(df_wide,
     count = colSums(df_wide[, category_cols, drop = FALSE])
   )
 
-  # Sort by count if requested
-  if (sort_descending) {
+  # Apply ordering logic
+  if (!is.null(order)) {
+    # Use custom order if provided
+    # Filter to only include categories that exist in the data
+    order_filtered <- order[order %in% category_counts$category]
+    category_counts <- category_counts[match(order_filtered, category_counts$category), ]
+    # Remove any NAs from the match operation
+    category_counts <- category_counts[!is.na(category_counts$category), ]
+  } else if (sort_descending) {
+    # Sort by count if no custom order specified
     category_counts <- category_counts[order(-category_counts$count), ]
   }
 
@@ -243,6 +314,9 @@ plot_category_counts <- function(df_wide,
 
   return(p)
 }
+
+
+
 #' Create an ordered horizontal bar chart for categorical variables
 #'
 #' Creates a horizontal bar chart with categories ordered by frequency (descending).
@@ -319,14 +393,27 @@ ordered_horizontal_barchart <- function(database,
 #' @param legend_title Legend title. Defaults to "".
 #' @param caption Optional caption. If NA (default), shows number of tools.
 #' @param position Bar position: "stack" (default), "dodge", or "fill".
+#' @param colors Named vector of colors for Yes/No. Defaults to c("Yes" = "#4CAF50", "No" = "#F44336").
+#' @param bin_order Order of binary variable levels. Defaults to c("Yes", "No", "Not applicable (model-agnostic)", "NA").
+#' @param cat_order Optional vector specifying the order of categories on x-axis. If NULL, uses default ordering.
 #'
 #' @return A ggplot2 object.
 #'
 #' @examples
 #' \dontrun{
 #' categorical_X_binary_Y_chart(database, Type.of.tool, Open.source)
+#'
+#' # Custom colors
 #' categorical_X_binary_Y_chart(database, Type.of.tool, Open.source,
-#'                               position = "dodge")
+#'                               colors = c("Yes" = "blue", "No" = "red"))
+#'
+#' # Reverse Yes/No order (No on top)
+#' categorical_X_binary_Y_chart(database, Type.of.tool, Open.source,
+#'                               bin_order = c("No", "Yes"))
+#'
+#' # Custom x-axis order
+#' categorical_X_binary_Y_chart(database, Type.of.tool, Open.source,
+#'                               cat_order = c("Tool1", "Tool2", "Tool3"))
 #' }
 #'
 #' @import ggplot2
@@ -336,18 +423,26 @@ ordered_horizontal_barchart <- function(database,
 #' @export
 categorical_X_binary_Y_chart <- function(database, cat_x, bin_y, title = "",
                                          x_title = "", legend_title = "",
-                                         caption = NA, position = "stack") {
-
+                                         caption = NA, position = "stack",
+                                         colors = c("Yes" = "#4CAF50", "No" = "#F44336"),
+                                         bin_order = c("Yes", "No", "Not applicable (model-agnostic)", "NA"),
+                                         cat_order = NULL) {
   data_filtered <- database |>
     dplyr::filter(!is.na({{cat_x}}), {{cat_x}} != "",
-                  !is.na({{bin_y}}), {{bin_y}} != "", {{bin_y}} != "Pending") |>
-    dplyr::mutate(
-      cat_x = factor({{cat_x}}),
-      bin_y = factor(
-        {{bin_y}},
-        levels = c("Yes", "No", "Not applicable (model-agnostic)", "NA")
-      )
-    )
+                  !is.na({{bin_y}}), {{bin_y}} != "", {{bin_y}} != "Pending")
+
+  # Apply categorical order if specified
+  if (!is.null(cat_order)) {
+    data_filtered <- data_filtered |>
+      dplyr::mutate(cat_x = factor({{cat_x}}, levels = cat_order))
+  } else {
+    data_filtered <- data_filtered |>
+      dplyr::mutate(cat_x = factor({{cat_x}}))
+  }
+
+  # Apply binary order
+  data_filtered <- data_filtered |>
+    dplyr::mutate(bin_y = factor({{bin_y}}, levels = bin_order))
 
   n_tools <- nrow(data_filtered)
 
@@ -356,7 +451,7 @@ categorical_X_binary_Y_chart <- function(database, cat_x, bin_y, title = "",
   }
 
   # Plot
-  ggplot2::ggplot(data_filtered, ggplot2::aes(x = cat_x, fill = bin_y)) +
+  p <- ggplot2::ggplot(data_filtered, ggplot2::aes(x = cat_x, fill = bin_y)) +
     ggplot2::geom_bar(position = position) +
     ggplot2::theme_minimal() +
     ggplot2::labs(
@@ -370,7 +465,36 @@ categorical_X_binary_Y_chart <- function(database, cat_x, bin_y, title = "",
       axis.text.x = ggplot2::element_text(angle = 45, hjust = 1),
       plot.title = ggplot2::element_text(hjust = 0.5, face = "bold")
     )
+
+  # Apply custom colors
+  # Get unique levels present in the data
+  present_levels <- levels(data_filtered$bin_y)[levels(data_filtered$bin_y) %in% unique(data_filtered$bin_y)]
+
+  # Create color vector for present levels
+  color_vec <- colors[present_levels]
+
+  # Add default colors for levels not specified in colors parameter
+  missing_levels <- present_levels[!present_levels %in% names(colors)]
+  if (length(missing_levels) > 0) {
+    default_colors <- c(
+      "Not applicable (model-agnostic)" = "#9E9E9E",
+      "NA" = "#607D8B"
+    )
+    for (level in missing_levels) {
+      if (level %in% names(default_colors)) {
+        color_vec[level] <- default_colors[level]
+      } else {
+        color_vec[level] <- "#BDBDBD"  # fallback color
+      }
+    }
+  }
+
+  p <- p + ggplot2::scale_fill_manual(values = color_vec)
+
+  return(p)
 }
+
+
 
 #' Plot Geographic Scope of Tools
 #'

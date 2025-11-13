@@ -10,10 +10,11 @@ plot_category_counts(
   title = "Category Counts",
   x_label = "Category",
   y_label = "Count",
-  fill_color = "darkgreen",
+  fill_color = "steelblue",
   sort_descending = TRUE,
   show_counts = TRUE,
-  top_n = NULL
+  top_n = NULL,
+  order = NULL
 )
 }
 \arguments{
@@ -32,16 +33,19 @@ counted.}
 \item{y_label}{Character string for the y-axis label. Default is "Count".}
 
 \item{fill_color}{Character string specifying the fill color for bars.
-Default is "darkgreen". Can be any valid color name or hex code.}
+Default is "steelblue". Can be any valid color name or hex code.}
 
 \item{sort_descending}{Logical indicating whether to sort categories by count
-in descending order. Default is \code{TRUE}.}
+in descending order. Default is \code{TRUE}. Ignored if \code{order} is specified.}
 
 \item{show_counts}{Logical indicating whether to display count labels above
 bars. Default is \code{TRUE}.}
 
-\item{top_n}{Numberindicating whether how many categories to be displayed (starting from the most frequent).
+\item{top_n}{Number indicating how many categories to be displayed (starting from the most frequent).
 Default is \code{NULL}.}
+
+\item{order}{Character vector specifying the desired order of categories on the x-axis.
+If provided, this supersedes \code{sort_descending}. Default is \code{NULL}.}
 }
 \value{
 A \code{ggplot2} object that can be further customized or displayed.
@@ -63,4 +67,5 @@ for better readability when category names are long.
 \examples{
 df_wide <- disaggregate_target(database, "Main.target.user.or.client.group")
 plot_category_counts(df_wide, "Tool")
+plot_category_counts(df_wide, "Tool", order = c("Category A", "Category B", "Category C"))
 }

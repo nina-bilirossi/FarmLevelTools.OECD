@@ -12,11 +12,20 @@ disaggregate_target <- function(df, target_col) {
   # Split the comma-separated values and create long format
   df_long <- df |>
     dplyr::select(dplyr::all_of(c("Tool", target_col))) |>
+    # Convert to character and replace blanks with "NA"
+    dplyr::mutate(!!rlang::sym(target_col) := as.character(!!rlang::sym(target_col)),
+                  !!rlang::sym(target_col) := dplyr::if_else(
+                    !!rlang::sym(target_col) == "" | is.na(!!rlang::sym(target_col)),
+                    "NA",
+                    !!rlang::sym(target_col)
+                  )) |>
     tidyr::separate_rows(!!rlang::sym(target_col), sep = ",") |>
-    dplyr::mutate(!!rlang::sym(target_col) := trimws(!!rlang::sym(target_col))) |>  # Trim whitespace
-    dplyr::filter(!!rlang::sym(target_col) != "" & !is.na(!!rlang::sym(target_col))) |>     # Remove empty values
-    dplyr::mutate(value = 1)     # Add indicator column
+    dplyr::mutate(!!rlang::sym(target_col) := trimws(!!rlang::sym(target_col))) |>
+    dplyr::filter(!!rlang::sym(target_col) != "") |>
+    dplyr::distinct(Tool, !!rlang::sym(target_col), .keep_all = TRUE) |>
+    dplyr::mutate(value = 1)
 
+  #print(df_long, n = 500)
   # Pivot to wide format
   df_wide <- df_long |>
     tidyr::pivot_wider(
@@ -27,3 +36,4 @@ disaggregate_target <- function(df, target_col) {
 
   return(df_wide)
 }
+

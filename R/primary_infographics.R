@@ -6,17 +6,15 @@
 #' @param thisyear Numeric. The current year for calculating active tools. Default is current year.
 #' @return A ggplot2 object
 #' @export
-active_tools <- function(database, ownership = FALSE, precision = TRUE, thisyear = as.numeric(format(Sys.Date(), "%Y"))){
+active_tools <- function(database, ownership = FALSE, precision = TRUE, legend = TRUE, thisyear = as.numeric(format(Sys.Date(), "%Y"))){
   # Replace empty strings with NA
   database$Latest.update[database$Latest.update == ""] <- NA
   database$Latest.update <- as.numeric(database$Latest.update)
   database$Latest.update <- suppressWarnings(as.numeric(database$Latest.update))
   cat("Number of NAs in Latest.update:", sum(is.na(database$Latest.update)), "\n")
   cat("Number of NAs in Year.of.release:", sum(is.na(database$Year.of.release)), "\n")
-
   # Define year range
   year_range <- seq(min(database$Year.of.release, na.rm = TRUE), thisyear)
-
   # For each tool, define the "end year" of activity
   database <- database |>
     dplyr::mutate(
@@ -27,7 +25,6 @@ active_tools <- function(database, ownership = FALSE, precision = TRUE, thisyear
         TRUE ~ Year.of.release
       )
     )
-
   if (ownership == TRUE){
     # Expand dataset: one row per year the tool is active
     active_timeline <- lapply(year_range, function(y) {
@@ -35,12 +32,10 @@ active_tools <- function(database, ownership = FALSE, precision = TRUE, thisyear
         dplyr::filter(Year.of.release <= y & end_year >= y) |>
         dplyr::mutate(Year = y)
     }) |> dplyr::bind_rows()
-
     # Count active tools per year *and* by ownership
     active_counts <- active_timeline |>
       dplyr::group_by(Year, Initiative...Partnership.type) |>
       dplyr::summarise(Active_Tools = dplyr::n(), .groups = "drop")
-
     if (precision == FALSE){
       active_counts <- active_counts |>
         dplyr::mutate(
@@ -50,9 +45,8 @@ active_tools <- function(database, ownership = FALSE, precision = TRUE, thisyear
           )
         )
     }
-
     # Plot stacked histogram
-    ggplot2::ggplot(active_counts, ggplot2::aes(x = Year, y = Active_Tools, fill = Initiative...Partnership.type)) +
+    p <- ggplot2::ggplot(active_counts, ggplot2::aes(x = Year, y = Active_Tools, fill = Initiative...Partnership.type)) +
       ggplot2::geom_col() +
       ggplot2::theme_minimal() +
       ggplot2::labs(
@@ -62,8 +56,14 @@ active_tools <- function(database, ownership = FALSE, precision = TRUE, thisyear
         fill = "Ownership"
       ) +
       ggplot2::scale_fill_brewer(palette = "Set2")
-  }
 
+    # Add or remove legend based on parameter
+    if (!legend) {
+      p <- p + ggplot2::theme(legend.position = "none")
+    }
+
+    return(p)
+  }
   else{
     # Count active tools per year efficiently
     active_df <- data.frame(
@@ -72,7 +72,6 @@ active_tools <- function(database, ownership = FALSE, precision = TRUE, thisyear
         sum(database$Year.of.release <= y & database$end_year >= y, na.rm = TRUE)
       })
     )
-
     # Plot
     ggplot2::ggplot(active_df, ggplot2::aes(x = Year, y = Active_Tools)) +
       ggplot2::geom_col(fill = "steelblue") +

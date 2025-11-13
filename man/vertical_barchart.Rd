@@ -10,8 +10,10 @@ vertical_barchart(
   title = "Distribution of Categories",
   x_label = "",
   y_label = "Count",
-  fill_color = "coral",
-  text_color = "darkred"
+  fill_color = "steelblue",
+  text_color = "black",
+  order = NULL,
+  show_na = TRUE
 )
 }
 \arguments{
@@ -25,9 +27,14 @@ vertical_barchart(
 
 \item{y_label}{Character string for the y-axis label. Default is "Count"}
 
-\item{fill_color}{Character string specifying the fill color for bars. Default is "coral"}
+\item{fill_color}{Character string specifying the fill color for bars. Default is "steelblue"}
 
-\item{text_color}{Character string specifying the color for count labels. Default is "darkred"}
+\item{text_color}{Character string specifying the color for count labels. Default is "black"}
+
+\item{order}{Character vector specifying the desired order of categories on the x-axis.
+If NULL (default), uses the natural order of the data.}
+
+\item{show_na}{Logical indicating whether to include NA values in the plot. Default is FALSE.}
 }
 \value{
 A ggplot2 object
@@ -41,4 +48,8 @@ vertical_barchart(database, Formal.updating.procedure..Emission.factors,
                   title = "Formal Updating Procedures")
 vertical_barchart(database, Country, title = "Tools by Country",
                   fill_color = "steelblue", text_color = "darkblue")
+vertical_barchart(database, Status, title = "Project Status",
+                  order = c("Planning", "In Progress", "Completed"))
+vertical_barchart(database, Country, title = "Tools by Country",
+                  show_na = TRUE)
 }
